@@ -1,4 +1,6 @@
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
 /**
@@ -126,5 +128,9 @@ public class Parser {
     public Tree parse(InputStream input) throws ParseException {
         la = new LexicalAnalyzer(input);
         return s();
+    }
+
+    public Tree parse(String input) throws ParseException {
+        return parse(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
     }
 }
