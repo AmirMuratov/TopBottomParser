@@ -91,7 +91,7 @@ public class Parser {
 
     private Tree v() throws ParseException {
         //V -> WV'
-            //V          | **Term**            | :
+        //V          | **Term**            | :
         Tree currentTree = new Tree("V");
         switch (la.currentToken()) {
             case TERM:
