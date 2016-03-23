@@ -12,9 +12,10 @@ public class LexicalAnalyzer {
 
     final Set<String> types = new HashSet<>();
     final Map<Integer, Class> oneSymbolTokens = new HashMap<>();
-    InputStream input;
-    int curPos;
-    int curChar;
+    private InputStream input;
+    private int curPos;
+    private int curChar;
+    private Token curToken;
 
     {
         types.add("Integer");
@@ -36,6 +37,7 @@ public class LexicalAnalyzer {
     public LexicalAnalyzer(InputStream input) throws ParseException {
         this.input = input;
         nextChar();
+        curToken = getNextToken();
     }
 
     private void nextChar() throws ParseException {
@@ -47,7 +49,7 @@ public class LexicalAnalyzer {
         }
     }
 
-    public Token nextToken() throws ParseException {
+    private Token getNextToken() throws ParseException {
         while (Character.isWhitespace(curChar)) {
             nextChar();
         }
@@ -76,5 +78,13 @@ public class LexicalAnalyzer {
             return new Var();
         }
         return new Variable(word);
+    }
+
+    public void nextToken() throws ParseException {
+        curToken = getNextToken();
+    }
+
+    public Token currentToken() {
+        return curToken;
     }
 }
