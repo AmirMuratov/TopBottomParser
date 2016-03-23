@@ -22,8 +22,8 @@ public class Parser {
         Tree currentTree = new Tree("S");
         switch (la.currentToken()) {
             case VAR:
-                consume(Token.VAR);
                 currentTree.addChild(new Tree("var", true));
+                consume(Token.VAR);
                 currentTree.addChild(p());
                 break;
             default:
@@ -35,10 +35,10 @@ public class Parser {
 
     private Tree p() throws ParseException {
         //P -> DP'
-        //P          | \w            | $
+        //P          | **Term**            | $
         Tree currentTree = new Tree("P");
         switch (la.currentToken()) {
-            case VARIABLE:
+            case TERM:
                 currentTree.addChild(d());
                 currentTree.addChild(p2());
                 break;
@@ -51,10 +51,10 @@ public class Parser {
 
     private Tree p2() throws ParseException {
         //P' -> P | eps
-        //    P'         | \w, eps       | $
+        //    P'         | **Term**, eps       | $
         Tree currentTree = new Tree("P'");
         switch (la.currentToken()) {
-            case VARIABLE:
+            case TERM:
                 currentTree.addChild(p());
                 break;
             case END:
@@ -68,16 +68,17 @@ public class Parser {
 
     private Tree d() throws ParseException {
         //D -> V: T;
-        //D          | \w            | \w, $
+        //D          | **Term**            | **Term**, $
         Tree currentTree = new Tree("D");
         switch (la.currentToken()) {
-            case VARIABLE:
+            case TERM:
                 currentTree.addChild(v());
-                consume(Token.COLON);
                 currentTree.addChild(new Tree(":", true));
-                currentTree.addChild(t());
-                consume(Token.SEMICOLON);
+                consume(Token.COLON);
+                currentTree.addChild(new Tree(la.currentToken().getName(), true));
+                consume(Token.TERM);
                 currentTree.addChild(new Tree(";", true));
+                consume(Token.SEMICOLON);
                 break;
             default:
                 throw new ParseException("Expected variable, found "
@@ -88,11 +89,12 @@ public class Parser {
 
     private Tree v() throws ParseException {
         //V -> WV'
-        //V          | \w            | :
+            //V          | **Term**            | :
         Tree currentTree = new Tree("V");
         switch (la.currentToken()) {
-            case VARIABLE:
-                currentTree.addChild(w());
+            case TERM:
+                currentTree.addChild(new Tree(la.currentToken().getName(), true));
+                consume(Token.TERM);
                 currentTree.addChild(v2());
                 break;
             default:
@@ -120,39 +122,6 @@ public class Parser {
         }
         return currentTree;
     }
-
-    private Tree t() throws ParseException {
-        //T -> Integer | Real | Boolean | Char | String | Word | Byte | Float | Extended
-        //T          | integer,char..| ;
-        Tree currentTree = new Tree("T");
-        switch (la.currentToken()) {
-            case TYPE:
-                currentTree.addChild(new Tree(la.currentToken().getName(), true));
-                consume(Token.TYPE);
-                break;
-            default:
-                throw new ParseException("Expected type, found "
-                        + la.currentToken().toString(), la.getTokenPosition());
-        }
-        return currentTree;
-    }
-
-    private Tree w() throws ParseException {
-        //W -> \w+
-        //W          | \w            | ',', :
-        Tree currentTree = new Tree("W");
-        switch (la.currentToken()) {
-            case VARIABLE:
-                currentTree.addChild(new Tree(la.currentToken().getName(), true));
-                consume(Token.VARIABLE);
-                break;
-            default:
-                throw new ParseException("Expected variable, found "
-                        + la.currentToken().toString(), la.getTokenPosition());
-        }
-        return currentTree;
-    }
-
 
     public Tree parse(InputStream input) throws ParseException {
         la = new LexicalAnalyzer(input);

@@ -10,13 +10,9 @@ S -> var P
 
 P -> DP | D
 
-D -> V: T;
+D -> V: **Term**;
 
-V -> W, V | W
-
-T -> integer | real | boolean | char | string | word | byte | float | extended
-
-W -> \w+ 
+V -> **Term**, V | **Term**
 
 ###  Описание нетерминалов
 
@@ -27,8 +23,6 @@ W -> \w+
    P          | Все строки обьявления переменных (x, y : Integer; a : Boolean; c : Char;)
    D          | Терминал, отвечающий за переменные одного типа (x, y : Integer;)
    V          | Переменные в терминале D (x, y)
-   T          | Тип переменных (Integer) 
-   W          | Название переменной
    
 В данной грамматике нет левой рекурсии. 
 
@@ -36,39 +30,34 @@ W -> \w+
 
 S -> var P
 
-P -> DP'
+P -> D P'
 
 P' -> P | eps
 
-D -> V: T;
+D -> V: **Term**;
 
-V -> WV'
+V -> **Term** V'
 
 V' -> , V | eps
-
-T -> integer | real | boolean | char | string | word | byte | float | extended
-
-W -> \w+ 
+ 
 
 ## 2. Построение лексического анализатора
 
-В грамматике есть следущие токены:
+В грамматике есть следущие терминалы:
 
    Терминал                 | Название токена              
   --------------------------|------------
    var                      | VAR                  
-   \w+(название переменной) | VARIABLE                  
+   **Term**                 | TERM                 
    ,                        | COMMA
    :                        | COLON             
    ;                        | SEMICOLON               
-   integer, char, ...       | TYPE
    $                        | END          
-
 
 
 ```
 public enum Token {
-    VAR, VARIABLE, COMMA, COLON, TYPE, SEMICOLON, END;
+    VAR, TERM, COMMA, COLON, SEMICOLON, END;
 }
 ```
 
@@ -81,13 +70,11 @@ public enum Token {
    Нетерминал | First         | Follow      
   ------------|---------------|-------------
    S          | var           | $           
-   P          | \w            | $          
-   P'         | \w, eps       | $
-   D          | \w            | \w, $        
-   V          | \w            | :          
-   V'         | ',', eps      | :
-   T          | integer,char..| ;           
-   W          | \w            | ',', :      
+   P          | **Term**      | $          
+   P'         | **Term**, eps | $
+   D          | **Term**      | **Term**, $        
+   V          | **Term**      | :          
+   V'         | ',', eps      | :           
    
 Синтаксический анализатор находится в Parser.java
 

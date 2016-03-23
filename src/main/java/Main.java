@@ -11,17 +11,15 @@ public class Main {
 
     public static void printTree(Tree parse) {
         System.out.println("Begining Parsing: " + parse.node);
-        for (Tree t : parse.children) {
-            printTree(t);
-        }
+        parse.children.forEach(Main::printTree);
         System.out.println("Ending Parsing: " + parse.node);
     }
 
     public static void main(String[] args) {
 
-        //String exampleString = "var i, j : Integer;X:Char;";
+        String exampleString = "var i, j : Integer;X:Char;";
         //String exampleString = "var i,we,t, t, t,t ,t t:integer;";
-        String exampleString = "var i,we,t, t, t,t ,t:integer;";
+        //String exampleString = "var i,we,t, t, t,t ,t:integer;";
         InputStream stream = new ByteArrayInputStream(exampleString.getBytes(StandardCharsets.UTF_8));
         try {
             Parser p = new Parser();

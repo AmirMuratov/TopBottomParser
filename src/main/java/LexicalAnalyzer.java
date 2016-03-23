@@ -8,24 +8,11 @@ import java.util.*;
  */
 public class LexicalAnalyzer {
 
-    final Set<String> types = new HashSet<>();
     private InputStream input;
     private int curPos;
     private int curChar;
     private Token curToken;
     private int tokenBeg;
-
-    {
-        types.add("integer");
-        types.add("char");
-        types.add("string");
-        types.add("float");
-        types.add("real");
-        types.add("boolean");
-        types.add("word");
-        types.add("extended");
-        types.add("byte");
-    }
 
     public LexicalAnalyzer(InputStream input) throws ParseException {
         this.input = input;
@@ -75,15 +62,11 @@ public class LexicalAnalyzer {
             nextChar();
         }
         String word = sb.toString();
-        if (types.contains(word.toLowerCase())) {
-            Token.TYPE.setName(word);
-            return Token.TYPE;
-        }
-        if (word.equals("var")) {
+        if (word.toLowerCase().equals("var")) {
             return Token.VAR;
         }
-        Token.VARIABLE.setName(word);
-        return Token.VARIABLE;
+        Token.TERM.setName(word);
+        return Token.TERM;
     }
 
     public void nextToken() throws ParseException {

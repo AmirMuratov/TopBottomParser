@@ -2,7 +2,7 @@
  * Created by amir on 22.03.16.
  */
 public enum Token {
-    VAR, VARIABLE, COMMA, COLON, TYPE, SEMICOLON, END;
+    VAR, TERM, COMMA, COLON, SEMICOLON, END;
 
     private String name;
 
