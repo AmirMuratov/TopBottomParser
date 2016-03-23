@@ -7,10 +7,15 @@
 
 
 S -> var P
+
 P -> DP | D
+
 D -> V: T;
+
 V -> W, V | W
-T -> Integer | Real | Boolean | Char | String | Word | Byte | Float | Extended
+
+T -> integer | real | boolean | char | string | word | byte | float | extended
+
 W -> \w+ 
 
 ###  Описание нетерминалов
@@ -23,7 +28,7 @@ W -> \w+
    D          | Терминал, отвечающий за переменные одного типа (x, y : Integer;)
    V          | Переменные в терминале D (x, y)
    T          | Тип переменных (Integer) 
-   W          | Названия переменных
+   W          | Название переменной
    
 В данной грамматике нет левой рекурсии.
 
@@ -34,14 +39,14 @@ W -> \w+
 
 ### Построим массивы First & Follow для нетерминалов
 
-   Нетерминал | First | Follow
-   ---------- | --------
-   S          | ^ | $
-   P          | var, D | $
-   D          | var, D | P, D, V, W
-   V          | ',', var, D | :
-   T          | : | ;
-   W          | ',', ;, var, D  | ',', :
+  | Нетерминал | First         | Follow      |
+  |------------|---------------|-------------|
+  | S          | var           | $           |
+  | P          | D, V, W, \w   | $           |
+  | D          | var, D        | P, D, V, W  |
+  | V          | W, \w         | :           |
+  | T          | integer,char..| ;           |
+  | W          | \w            | ',', :      |
 
 ## 4. Визуализация дерева разбора
     

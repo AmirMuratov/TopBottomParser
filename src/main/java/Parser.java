@@ -10,8 +10,17 @@ import java.text.ParseException;
 public class Parser {
     LexicalAnalyzer analyzer;
 
+    private void consume(Token t) throws ParseException{
+        if (analyzer.currentToken().getType() != t.getType()) {
+            throw new ParseException("Expected " + t.getName() + ", found " + analyzer.currentToken().getName(), 1);
+        }
+        analyzer.nextToken();
+    }
+
     private Tree s() throws ParseException {
         //S -> var P
+        //var | $ |
+
         if (analyzer.currentToken().getType() != TokenType.VAR) {
             throw new ParseException("Var token not found", 1);
         }
@@ -22,9 +31,9 @@ public class Parser {
         //P -> DP | D
         Tree parsedLine = d();
         if (analyzer.currentToken().getType() != TokenType.END) {
-            return new Tree("D", parsedLine, p());
+            return new Tree("P", parsedLine, p());
         } else {
-            return new Tree("D", parsedLine);
+            return new Tree("P", parsedLine);
         }
     }
     private Tree d() throws ParseException {

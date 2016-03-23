@@ -1,4 +1,6 @@
 
+import Tokens.TokenType;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -29,5 +31,6 @@ public class Main {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
     }
 }
