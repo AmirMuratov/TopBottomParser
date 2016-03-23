@@ -16,15 +16,15 @@ public class LexicalAnalyzer {
     private int tokenBeg;
 
     {
-        types.add("Integer");
-        types.add("Char");
-        types.add("String");
-        types.add("Float");
-        types.add("Real");
-        types.add("Boolean");
-        types.add("Word");
-        types.add("Extended");
-        types.add("Byte");
+        types.add("integer");
+        types.add("char");
+        types.add("string");
+        types.add("float");
+        types.add("real");
+        types.add("boolean");
+        types.add("word");
+        types.add("extended");
+        types.add("byte");
     }
 
     public LexicalAnalyzer(InputStream input) throws ParseException {
@@ -75,7 +75,7 @@ public class LexicalAnalyzer {
             nextChar();
         }
         String word = sb.toString();
-        if (types.contains(word)) {
+        if (types.contains(word.toLowerCase())) {
             Token.TYPE.setName(word);
             return Token.TYPE;
         }

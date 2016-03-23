@@ -11,20 +11,21 @@ public class Main {
 
     public static void printTree(Tree parse) {
         System.out.println("Begining Parsing: " + parse.node);
-        if (parse.children != null) {
-            for (Tree t : parse.children) {
-                printTree(t);
-            }
+        for (Tree t : parse.children) {
+            printTree(t);
         }
         System.out.println("Ending Parsing: " + parse.node);
     }
 
     public static void main(String[] args) {
-        String exampleString = "var i, j : Integer;X:Char;";
+
+        //String exampleString = "var i, j : Integer;X:Char;";
+        //String exampleString = "var i,we,t, t, t,t ,t t:integer;";
+        String exampleString = "var i,we,t, t, t,t ,t:integer;";
         InputStream stream = new ByteArrayInputStream(exampleString.getBytes(StandardCharsets.UTF_8));
         try {
             Parser p = new Parser();
-            printTree(p.parse(stream));
+            new Visualizer().Visualize(p.parse(stream));
         } catch (ParseException e) {
             e.printStackTrace();
         }

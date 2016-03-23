@@ -9,7 +9,8 @@ public class Parser {
 
     private void consume(Token t) throws ParseException {
         if (la.currentToken() != t) {
-            throw new ParseException("Expected " + t.toString() + ", found " + la.currentToken().toString(), 1);
+            throw new ParseException("Expected " + t.toString() + ", found "
+                    + la.currentToken().toString(), la.getTokenPosition());
         }
         la.nextToken();
     }
@@ -22,7 +23,7 @@ public class Parser {
         switch (la.currentToken()) {
             case VAR:
                 consume(Token.VAR);
-                currentTree.addChild(new Tree("Var"));
+                currentTree.addChild(new Tree("var", true));
                 currentTree.addChild(p());
                 break;
             default:
@@ -73,8 +74,10 @@ public class Parser {
             case VARIABLE:
                 currentTree.addChild(v());
                 consume(Token.COLON);
+                currentTree.addChild(new Tree(":", true));
                 currentTree.addChild(t());
                 consume(Token.SEMICOLON);
+                currentTree.addChild(new Tree(";", true));
                 break;
             default:
                 throw new ParseException("Expected variable, found "
@@ -106,12 +109,13 @@ public class Parser {
         switch (la.currentToken()) {
             case COMMA:
                 consume(Token.COMMA);
+                currentTree.addChild(new Tree(",", true));
                 currentTree.addChild(v());
                 break;
             case COLON:
                 break;
             default:
-                throw new ParseException("Expected variable or colon, found "
+                throw new ParseException("Expected coma or colon, found "
                         + la.currentToken().toString(), la.getTokenPosition());
         }
         return currentTree;
@@ -123,7 +127,7 @@ public class Parser {
         Tree currentTree = new Tree("T");
         switch (la.currentToken()) {
             case TYPE:
-                currentTree.addChild(new Tree(la.currentToken().getName()));
+                currentTree.addChild(new Tree(la.currentToken().getName(), true));
                 consume(Token.TYPE);
                 break;
             default:
@@ -139,7 +143,7 @@ public class Parser {
         Tree currentTree = new Tree("W");
         switch (la.currentToken()) {
             case VARIABLE:
-                currentTree.addChild(new Tree(la.currentToken().getName()));
+                currentTree.addChild(new Tree(la.currentToken().getName(), true));
                 consume(Token.VARIABLE);
                 break;
             default:
