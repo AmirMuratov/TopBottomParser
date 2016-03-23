@@ -1,5 +1,3 @@
-import Tokens.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -11,11 +9,11 @@ import java.util.*;
 public class LexicalAnalyzer {
 
     final Set<String> types = new HashSet<>();
-    final Map<Integer, Class> oneSymbolTokens = new HashMap<>();
     private InputStream input;
     private int curPos;
     private int curChar;
     private Token curToken;
+    private int tokenBeg;
 
     {
         types.add("Integer");
@@ -27,12 +25,7 @@ public class LexicalAnalyzer {
         types.add("Word");
         types.add("Extended");
         types.add("Byte");
-        oneSymbolTokens.put((int) ',', Comma.class);
-        oneSymbolTokens.put((int) ':', Colon.class);
-        oneSymbolTokens.put((int) ';', Semicolon.class);
-        oneSymbolTokens.put(-1, End.class);
     }
-
 
     public LexicalAnalyzer(InputStream input) throws ParseException {
         this.input = input;
@@ -53,14 +46,25 @@ public class LexicalAnalyzer {
         while (Character.isWhitespace(curChar)) {
             nextChar();
         }
-        if (oneSymbolTokens.containsKey(curChar)) {
-            try {
-                return (Token) oneSymbolTokens.get(curChar).newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            } finally {
-                nextChar();
-            }
+        tokenBeg = curPos;
+        Token currentToken = null;
+        switch (curChar) {
+            case ';':
+                currentToken = Token.SEMICOLON;
+                break;
+            case ':':
+                currentToken = Token.COLON;
+                break;
+            case ',':
+                currentToken = Token.COMMA;
+                break;
+            case -1:
+                currentToken = Token.END;
+                break;
+        }
+        if (currentToken != null) {
+            nextChar();
+            return currentToken;
         }
         if (!Character.isLetter(curChar)) {
             throw new ParseException("Illegal character", curPos);
@@ -72,12 +76,14 @@ public class LexicalAnalyzer {
         }
         String word = sb.toString();
         if (types.contains(word)) {
-            return new Type(word);
+            Token.TYPE.setName(word);
+            return Token.TYPE;
         }
         if (word.equals("var")) {
-            return new Var();
+            return Token.VAR;
         }
-        return new Variable(word);
+        Token.VARIABLE.setName(word);
+        return Token.VARIABLE;
     }
 
     public void nextToken() throws ParseException {
@@ -86,5 +92,9 @@ public class LexicalAnalyzer {
 
     public Token currentToken() {
         return curToken;
+    }
+
+    public int getTokenPosition() {
+        return tokenBeg;
     }
 }

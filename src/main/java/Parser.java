@@ -1,6 +1,3 @@
-import Tokens.Token;
-import Tokens.TokenType;
-
 import java.io.InputStream;
 import java.text.ParseException;
 
@@ -8,85 +5,153 @@ import java.text.ParseException;
  * Created by amir on 22.03.16.
  */
 public class Parser {
-    LexicalAnalyzer analyzer;
+    LexicalAnalyzer la;
 
-    private void consume(Token t) throws ParseException{
-        if (analyzer.currentToken().getType() != t.getType()) {
-            throw new ParseException("Expected " + t.getName() + ", found " + analyzer.currentToken().getName(), 1);
+    private void consume(Token t) throws ParseException {
+        if (la.currentToken() != t) {
+            throw new ParseException("Expected " + t.toString() + ", found " + la.currentToken().toString(), 1);
         }
-        analyzer.nextToken();
+        la.nextToken();
     }
+
 
     private Tree s() throws ParseException {
         //S -> var P
-        //var | $ |
+        //S          | var           | $
+        Tree currentTree = new Tree("S");
+        switch (la.currentToken()) {
+            case VAR:
+                consume(Token.VAR);
+                currentTree.addChild(new Tree("Var"));
+                currentTree.addChild(p());
+                break;
+            default:
+                throw new ParseException("Expected var, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
+        }
+        return currentTree;
+    }
 
-        if (analyzer.currentToken().getType() != TokenType.VAR) {
-            throw new ParseException("Var token not found", 1);
-        }
-        analyzer.nextToken();
-        return new Tree("S", new Tree("VAR"), p());
-    }
     private Tree p() throws ParseException {
-        //P -> DP | D
-        Tree parsedLine = d();
-        if (analyzer.currentToken().getType() != TokenType.END) {
-            return new Tree("P", parsedLine, p());
-        } else {
-            return new Tree("P", parsedLine);
+        //P -> DP'
+        //P          | \w            | $
+        Tree currentTree = new Tree("P");
+        switch (la.currentToken()) {
+            case VARIABLE:
+                currentTree.addChild(d());
+                currentTree.addChild(p2());
+                break;
+            default:
+                throw new ParseException("Expected variable, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
         }
+        return currentTree;
     }
+
+    private Tree p2() throws ParseException {
+        //P' -> P | eps
+        //    P'         | \w, eps       | $
+        Tree currentTree = new Tree("P'");
+        switch (la.currentToken()) {
+            case VARIABLE:
+                currentTree.addChild(p());
+                break;
+            case END:
+                break;
+            default:
+                throw new ParseException("Expected variable or end of string, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
+        }
+        return currentTree;
+    }
+
     private Tree d() throws ParseException {
         //D -> V: T;
-        Tree variables = v();
-        if (analyzer.currentToken().getType() != TokenType.COLON) {
-            throw new ParseException("Can't find colon after variables", 1);
+        //D          | \w            | \w, $
+        Tree currentTree = new Tree("D");
+        switch (la.currentToken()) {
+            case VARIABLE:
+                currentTree.addChild(v());
+                consume(Token.COLON);
+                currentTree.addChild(t());
+                consume(Token.SEMICOLON);
+                break;
+            default:
+                throw new ParseException("Expected variable, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
         }
-        analyzer.nextToken();
-        Tree type = t();
-        if (analyzer.currentToken().getType() != TokenType.SEMICOLON) {
-            throw new ParseException("Can't find colon after type", 1);
-        }
-        analyzer.nextToken();
-        return new Tree("D", variables, new Tree("COLON"), type, new Tree("SEMICOLON"));
+        return currentTree;
     }
 
     private Tree v() throws ParseException {
-        //V -> W, V | W
-        Tree variable = w();
-        if (analyzer.currentToken().getType() == TokenType.COMMA) {
-            analyzer.nextToken();
-            return new Tree("V", variable, new Tree("COMMA"), v());
-        } else {
-            return new Tree("V", variable);
+        //V -> WV'
+        //V          | \w            | :
+        Tree currentTree = new Tree("V");
+        switch (la.currentToken()) {
+            case VARIABLE:
+                currentTree.addChild(w());
+                currentTree.addChild(v2());
+                break;
+            default:
+                throw new ParseException("Expected variable, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
         }
+        return currentTree;
+    }
+
+    private Tree v2() throws ParseException {
+        //V' -> , V  | eps
+        //V'         | ',', eps       | :
+        Tree currentTree = new Tree("V'");
+        switch (la.currentToken()) {
+            case COMMA:
+                consume(Token.COMMA);
+                currentTree.addChild(v());
+                break;
+            case COLON:
+                break;
+            default:
+                throw new ParseException("Expected variable or colon, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
+        }
+        return currentTree;
     }
 
     private Tree t() throws ParseException {
         //T -> Integer | Real | Boolean | Char | String | Word | Byte | Float | Extended
-        if (analyzer.currentToken().getType() != TokenType.TYPE) {
-            throw new ParseException("Can't find type", 2);
+        //T          | integer,char..| ;
+        Tree currentTree = new Tree("T");
+        switch (la.currentToken()) {
+            case TYPE:
+                currentTree.addChild(new Tree(la.currentToken().getName()));
+                consume(Token.TYPE);
+                break;
+            default:
+                throw new ParseException("Expected type, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
         }
-        String name = analyzer.currentToken().getName();
-        analyzer.nextToken();
-        return new Tree("T", new Tree(name));
+        return currentTree;
     }
-
 
     private Tree w() throws ParseException {
         //W -> \w+
-        if (analyzer.currentToken().getType() != TokenType.VARIABLE) {
-            throw new ParseException("Can't find variable name", 2);
+        //W          | \w            | ',', :
+        Tree currentTree = new Tree("W");
+        switch (la.currentToken()) {
+            case VARIABLE:
+                currentTree.addChild(new Tree(la.currentToken().getName()));
+                consume(Token.VARIABLE);
+                break;
+            default:
+                throw new ParseException("Expected variable, found "
+                        + la.currentToken().toString(), la.getTokenPosition());
         }
-        String name = analyzer.currentToken().getName();
-        analyzer.nextToken();
-        return new Tree("W", new Tree(name));
+        return currentTree;
     }
 
 
-
     public Tree parse(InputStream input) throws ParseException {
-        analyzer = new LexicalAnalyzer(input);
+        la = new LexicalAnalyzer(input);
         return s();
     }
 }
